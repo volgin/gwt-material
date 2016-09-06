@@ -1,8 +1,118 @@
 package gwt.material.design.client.ui;
 
+import gwt.material.design.client.base.HasCounter;
+import gwt.material.design.client.base.HasError;
+import gwt.material.design.client.base.HasIcon;
+import gwt.material.design.client.base.HasInputType;
+import gwt.material.design.client.base.HasPlaceholder;
+import gwt.material.design.client.base.MaterialWidget;
+import gwt.material.design.client.base.error.ErrorHandler;
+import gwt.material.design.client.base.error.ErrorHandlerType;
+import gwt.material.design.client.base.error.HasErrorHandler;
+import gwt.material.design.client.base.mixin.BlankValidatorMixin;
+import gwt.material.design.client.base.mixin.CounterMixin;
+import gwt.material.design.client.base.mixin.ErrorHandlerMixin;
+import gwt.material.design.client.base.mixin.ErrorMixin;
+import gwt.material.design.client.base.mixin.FocusableMixin;
+import gwt.material.design.client.base.validator.HasBlankValidator;
+import gwt.material.design.client.base.validator.HasValidators;
+import gwt.material.design.client.base.validator.ValidationChangedEvent.ValidationChangedHandler;
+import gwt.material.design.client.base.validator.Validator;
+import gwt.material.design.client.constants.IconPosition;
+import gwt.material.design.client.constants.IconSize;
+import gwt.material.design.client.constants.IconType;
+import gwt.material.design.client.constants.InputType;
+import gwt.material.design.client.ui.html.Label;
+
+import java.util.List;
+
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.editor.client.EditorError;
+import com.google.gwt.editor.client.HasEditorErrors;
+import com.google.gwt.editor.client.IsEditor;
+import com.google.gwt.editor.ui.client.adapters.ValueBoxEditor;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEndHandler;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEnterHandler;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragHandler;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragLeaveHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.GestureChangeEvent;
+import com.google.gwt.event.dom.client.GestureChangeHandler;
+import com.google.gwt.event.dom.client.GestureEndEvent;
+import com.google.gwt.event.dom.client.GestureEndHandler;
+import com.google.gwt.event.dom.client.GestureStartEvent;
+import com.google.gwt.event.dom.client.GestureStartHandler;
+import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
+import com.google.gwt.event.dom.client.HasAllGestureHandlers;
+import com.google.gwt.event.dom.client.HasAllKeyHandlers;
+import com.google.gwt.event.dom.client.HasAllMouseHandlers;
+import com.google.gwt.event.dom.client.HasAllTouchHandlers;
+import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.HasDoubleClickHandlers;
+import com.google.gwt.event.dom.client.HasKeyUpHandlers;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
+import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.dom.client.TouchCancelEvent;
+import com.google.gwt.event.dom.client.TouchCancelHandler;
+import com.google.gwt.event.dom.client.TouchEndEvent;
+import com.google.gwt.event.dom.client.TouchEndHandler;
+import com.google.gwt.event.dom.client.TouchMoveEvent;
+import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.event.dom.client.TouchStartEvent;
+import com.google.gwt.event.dom.client.TouchStartHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.AutoDirectionHandler;
+import com.google.gwt.i18n.shared.DirectionEstimator;
+import com.google.gwt.i18n.shared.HasDirectionEstimator;
+import com.google.gwt.uibinder.client.UiChild;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.HasName;
+import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.ValueBoxBase;
+import com.google.gwt.user.client.ui.ValueBoxBase.TextAlignment;
 /*
  * #%L
  * GwtMaterial
@@ -22,44 +132,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
  * limitations under the License.
  * #L%
  */
-
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.editor.client.EditorError;
-import com.google.gwt.editor.client.HasEditorErrors;
-import com.google.gwt.editor.client.IsEditor;
-import com.google.gwt.editor.ui.client.adapters.ValueBoxEditor;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.i18n.client.AutoDirectionHandler;
-import com.google.gwt.i18n.shared.DirectionEstimator;
-import com.google.gwt.i18n.shared.HasDirectionEstimator;
-import com.google.gwt.uibinder.client.UiChild;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.*;
-import com.google.gwt.user.client.ui.ValueBoxBase;
-import com.google.gwt.user.client.ui.ValueBoxBase.TextAlignment;
-import gwt.material.design.client.base.*;
-import gwt.material.design.client.base.error.*;
-import gwt.material.design.client.base.error.ErrorHandler;
-import gwt.material.design.client.base.mixin.BlankValidatorMixin;
-import gwt.material.design.client.base.mixin.CounterMixin;
-import gwt.material.design.client.base.mixin.ErrorHandlerMixin;
-import gwt.material.design.client.base.mixin.ErrorMixin;
-import gwt.material.design.client.base.mixin.FocusableMixin;
-import gwt.material.design.client.base.validator.HasBlankValidator;
-import gwt.material.design.client.base.validator.HasValidators;
-import gwt.material.design.client.base.validator.ValidationChangedEvent.ValidationChangedHandler;
-import gwt.material.design.client.base.validator.Validator;
-import gwt.material.design.client.constants.IconPosition;
-import gwt.material.design.client.constants.IconSize;
-import gwt.material.design.client.constants.IconType;
-import gwt.material.design.client.constants.InputType;
-import gwt.material.design.client.ui.html.Label;
-
-import java.util.List;
 
 //@formatter:off
 
@@ -155,7 +227,8 @@ public class MaterialValueBox<T> extends MaterialWidget implements HasChangeHand
     /**
      * Resets the textbox by removing its content and resetting visual state.
      */
-    public void clear() {
+    @Override
+	public void clear() {
         valueBoxBase.setText("");
         clearErrorOrSuccess();
         label.removeStyleName("active");
